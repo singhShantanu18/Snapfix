@@ -32,9 +32,11 @@ export default function Home() {
         <nav
           className={`${poppins.className} relative z-30 bg-white flex items-center justify-between px-6 py-4`}
         >
-          <img
+          <Image
             src="/Logo.png"
             alt="SnapFix Logo"
+            width={160}
+            height={56}
             className="h-12 sm:h-14 w-auto"
           />
 
@@ -115,9 +117,11 @@ export default function Home() {
 
 
                 {/* Phone Image */}
-                <img
+                <Image
                   src="/holding_phone-removebg-preview.png"
                   alt="Phone"
+                  width={100}
+                  height={100}
                   className="w-full h-auto relative z-10"
                 />
 
@@ -131,19 +135,19 @@ export default function Home() {
                   <div className="w-full max-w-[55%] space-y-2">
 
                     <div className="bg-white rounded-md p-2 shadow">
-                      <img src="/iss-3.png" className="w-full h-auto" />
+                      <Image src="/iss-3.png" alt="a" width={100} height={100} className="w-full h-auto" />
                     </div>
 
                     <div className="bg-white rounded-md p-2 shadow">
-                      <img src="/issue.png" className="w-full h-auto" />
+                      <Image src="/issue.png" alt="b" width={100} height={100} className="w-full h-auto" />
                     </div>
 
                     <div className="bg-white rounded-md p-2 shadow">
-                      <img src="/issue1.png" className="w-full h-auto" />
+                      <Image src="/issue1.png" alt="c" width={100} height={100} className="w-full h-auto" />
                     </div>
 
                     <div className="bg-white rounded-md p-2 shadow">
-                      <img src="/iss-3.png" className="w-full h-auto" />
+                      <Image src="/iss-3.png" alt="d" width={200} height={100} className="w-full h-auto" />
                     </div>
 
                   </div>

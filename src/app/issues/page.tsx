@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link";
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +16,6 @@ import {
   Users,
   Search,
   Filter,
-  Plus,
   Construction,
   Lightbulb,
   Trash2,
@@ -127,7 +127,7 @@ export default function IssuesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className=" rounded-lg flex items-center justify-center"><img src="/Logo.png" className="h-[16vh] w-[45vh] " />
+                <div className=" rounded-lg flex items-center justify-center"><Image src="/Logo.png" alt="SnapFix logo"  width={300} height={100}  className="h-[16vh] w-[45vh] " />
                   <MapPin className="w-5 h-5 text-primary-foreground" />
                 </div>
               </div>
@@ -246,9 +246,11 @@ export default function IssuesPage() {
                         </div>
                       </div>
                       {issue.image && (
-                        <img
+                        <Image
                           src={issue.image || "/placeholder.svg"}
                           alt={issue.title}
+                           width={300}
+                           height={100}
                           className="w-20 h-20 object-cover rounded-lg"
                         />
                       )}
@@ -276,7 +278,7 @@ export default function IssuesPage() {
             </DialogHeader>
             <div className="space-y-4">
               {selectedIssue.image && (
-                <img
+                <Image
                   src={selectedIssue.image || "/placeholder.svg"}
                   alt={selectedIssue.title}
                   className="w-full h-48 object-cover rounded-lg"

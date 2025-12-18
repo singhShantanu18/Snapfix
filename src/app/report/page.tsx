@@ -1,39 +1,26 @@
 "use client";
+
 import Link from "next/link";
+import Image from "next/image";
 import { Poppins } from "next/font/google";
 import React, { useState } from "react";
 import { Lightbulb, Navigation, Trash2 } from "lucide-react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMapEvents,
-} from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import dynamic from "next/dynamic";
+
+// ✅ Dynamic import (SSR disabled)
+const ReportMap = dynamic(() => import("@/components/ReportMap"), {
+  ssr: false,
+});
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
-const DefaultIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-});
-L.Marker.prototype.options.icon = DefaultIcon;
 
-
+// ---------- Icons ----------
 const ManholeIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <circle
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="2"
-      fill="none"
-    />
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
     <circle cx="12" cy="12" r="6" fill="currentColor" opacity="0.3" />
     <rect x="8" y="8" width="8" height="1" fill="currentColor" />
     <rect x="8" y="10" width="8" height="1" fill="currentColor" />
@@ -42,27 +29,10 @@ const ManholeIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
-
-function LocationMarker({
-  setLatitude,
-  setLongitude,
-}: {
-  setLatitude: any;
-  setLongitude: any;
-}) {
-  useMapEvents({
-    click(e) {
-      setLatitude(e.latlng.lat.toFixed(6));
-      setLongitude(e.latlng.lng.toFixed(6));
-    },
-  });
-  return null;
-}
-
 export default function SnapFixReport() {
   const [selectedIssueType, setSelectedIssueType] = useState("");
   const [title, setTitle] = useState("");
-  const [latitude, setLatitude] = useState("28.6139"); 
+  const [latitude, setLatitude] = useState("28.6139");
   const [longitude, setLongitude] = useState("77.2090");
   const [pincode, setPincode] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -77,50 +47,45 @@ export default function SnapFixReport() {
   const lat = parseFloat(latitude);
   const lng = parseFloat(longitude);
 
-  // 🔎 Search by Pincode
+  // 🔍 Pincode search
   const handlePincodeSearch = async () => {
     if (!pincode) return;
-    try {
-      const response = await fetch(
-       ` https://nominatim.openstreetmap.org/search?q=${pincode},India&format=json&limit=1`
-      );
-      const data = await response.json();
-      if (data.length > 0) {
-        setLatitude(data[0].lat);
-        setLongitude(data[0].lon);
-      } else {
-        alert("No location found for this pincode");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error fetching location");
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${pincode},India&format=json&limit=1`
+    );
+    const data = await res.json();
+    if (data.length > 0) {
+      setLatitude(data[0].lat);
+      setLongitude(data[0].lon);
+    } else {
+      alert("No location found");
     }
   };
 
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
+    if (e.target.files?.length) {
       setImage(e.target.files[0]);
     }
   };
 
   return (
     <main>
-      <div className="section1 min-h-[135vh] bg-[#FAFAF7] p-6 relative">
+      <div className="min-h-[135vh] bg-[#FAFAF7] p-6 relative">
         {/* Navbar */}
-        <nav
-          className={`${poppins.className} relative z-30 bg-[#FAFAF7] flex items-center justify-between px-6 py-4`}
-        >
-          <img
+        <nav className={`${poppins.className} flex justify-between items-center px-6 py-4`}>
+          <Image
             src="/Logo.png"
             alt="SnapFix Logo"
+            width={300}
+            height={100}
             className="h-12 sm:h-14 w-auto"
+            priority
           />
 
           <div className="hidden md:flex gap-8 font-semibold text-lg">
-            <Link href="/"><h4 className="cursor-pointer">Home</h4></Link>
-            <Link href="/issues"><h4 className="cursor-pointer">Issues</h4></Link>
-            <Link href="/report"><h4 className="cursor-pointer">Report</h4></Link>
+            <Link href="/">Home</Link>
+            <Link href="/issues">Issues</Link>
+            <Link href="/report">Report</Link>
           </div>
 
           <button className="border px-6 py-2 rounded-full font-semibold text-sm">
@@ -128,121 +93,71 @@ export default function SnapFixReport() {
           </button>
         </nav>
 
-        {/* Layout: Form + Map */}
+        {/* Layout */}
         <div className="absolute flex h-[79vh] w-[190vh] top-[19vh] left-[13vh] gap-6">
-          {/* White Form */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg w-[90vh] h-[107vh]">
-            {/* Title */}
-            <div className="mb-6">
-              <label className="block text-gray-700 font-semibold mb-3 text-[1.4rem]">Title</label>
+          {/* Form */}
+          <div className="bg-white/80 rounded-3xl p-8 shadow-lg w-[90vh] h-[107vh]">
+            <label className="block font-semibold mb-3">Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-4 py-3 rounded-2xl bg-[#e8f9f0]"
+            />
+
+            {/* Issue Types */}
+            <div className="flex gap-4 flex-wrap mt-5">
+              {issueTypes.map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setSelectedIssueType(type.id)}
+                  className={`p-4 rounded-2xl border ${
+                    selectedIssueType === type.id ? "bg-[#e8f9f0]" : "bg-[#f1fcf6]"
+                  }`}
+                >
+                  <type.icon className="w-8 h-8" />
+                  <span>{type.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Upload */}
+            <label className="block mt-5 cursor-pointer">
+              📷 {image ? image.name : "Upload image"}
+              <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+            </label>
+
+            {/* Pincode */}
+            <div className="flex gap-3 mt-5">
               <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-[#e8f9f0] border-2 border-[#b9e6c9] focus:outline-none focus:border-[#96caa8] transition-colors"
-              />
-            </div>
-
-            {/* Issue Type */}
-            <div className="mb-5">
-              <div className="flex gap-4 flex-wrap">
-                {issueTypes.map((type) => (
-                  <button
-                    key={type.id}
-                    onClick={() => setSelectedIssueType(type.id)}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all ${
-                      selectedIssueType === type.id
-                        ? "bg-[#e8f9f0] text-[#6fbd8c] border-[#6fbd8c]"
-                        : "bg-[#f1fcf6] text-[#88cfa2] hover:bg-[#bfeccd] border border-[#6fbd8c]"
-                    }`}
-                  >
-                    <type.icon className="w-8 h-8" />
-                    <span className="text-sm font-medium">{type.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Upload Image */}
-            <div className="mb-4">
-              <label className="flex items-center gap-3 px-6 py-3 bg-[#cceeff] hover:bg-[#b3e0ff] text-[#4a6b89] rounded-2xl transition-colors font-medium cursor-pointer">
-                <span className="text-lg">📷</span>
-                {image ? image.name : "Upload image"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-              </label>
-            </div>
-
-            {/* Pincode Input */}
-            <div className="mb-6 flex gap-3">
-              <input
-                type="text"
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value)}
-                className="flex-1 px-4 py-3 bg-[#e8f9f0] border-2 border-[#b9e6c9] focus:border-[#96caa8] rounded-2xl focus:outline-none"
                 placeholder="Enter pincode"
+                className="flex-1 px-4 py-3 rounded-2xl bg-[#e8f9f0]"
               />
-              <button
-                onClick={handlePincodeSearch}
-                className="px-6 py-3 bg-[#cceeff] hover:bg-[#b3e0ff] rounded-2xl text-[#4a6b89] font-medium  transition-colors"
-              >
+              <button onClick={handlePincodeSearch} className="px-6 rounded-2xl bg-[#cceeff]">
                 Go
               </button>
             </div>
 
-            {/* Latitude & Longitude */}
-            <div className="mb-6 flex gap-4">
-              <div className="flex-1">
-                <label className="block text-gray-700 mb-2 text-[1.3rem] font-semibold">
-                  Latitude
-                </label>
-                <input
-                  type="text"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#e8f9f0] border-2 border-[#b9e6c9] focus:border-[#96caa8] rounded-2xl focus:outline-none"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="block text-gray-700 mb-2 text-[1.3rem] font-semibold">
-                  Longitude
-                </label>
-                <input
-                  type="text"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#e8f9f0] border-2 border-[#b9e6c9] focus:border-[#96caa8] rounded-2xl focus:outline-none"
-                />
-              </div>
+            {/* Lat/Lng */}
+            <div className="flex gap-4 mt-5">
+              <input value={latitude} onChange={(e) => setLatitude(e.target.value)} />
+              <input value={longitude} onChange={(e) => setLongitude(e.target.value)} />
             </div>
 
-            {/* Submit */}
-            <button className="bg-gradient-to-r from-[#7ddcff] via-[#8de8d8] to-[#6edfbf] hover:from-[#5dc7f2] hover:via-[#73dec7] hover:to-[#58cfae] transition-all duration-300 text-white font-semibold py-3 px-6 rounded-2xl shadow-md w-full py-4">
+            <button className="mt-6 w-full py-4 bg-gradient-to-r from-[#7ddcff] to-[#6edfbf] rounded-2xl text-white">
               Submit
             </button>
           </div>
 
-          {/* Map Div */}
+          {/* ✅ Map */}
           <div className="flex-1 rounded-3xl overflow-hidden shadow-lg h-[107vh]">
-            <MapContainer
-              center={[lat, lng]}
-              zoom={13}
-              key={`${lat}-${lng}`} // 🔑 re-render map when coords change
-              className="h-full w-full"
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; OpenStreetMap contributors"
-              />
-              <Marker position={[lat, lng]}>
-                <Popup>Issue Location</Popup>
-              </Marker>
-              <LocationMarker setLatitude={setLatitude} setLongitude={setLongitude} />
-            </MapContainer>
+            <ReportMap
+              lat={lat}
+              lng={lng}
+              setLatitude={setLatitude}
+              setLongitude={setLongitude}
+            />
           </div>
         </div>
       </div>

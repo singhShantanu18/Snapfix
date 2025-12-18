@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -19,7 +20,6 @@ import {
   Trash2,
   Filter,
   BarChart3,
-  Settings,
   Bell,
   Download,
   RefreshCw,
@@ -153,9 +153,18 @@ function StatsOverview({ totalIssues, activeIssues, resolvedIssues, inProgressIs
   )
 }
 
+type IssueChartData = {
+  type: string
+  count: number
+  active: number
+  resolved: number
+  inProgress: number
+}
+
 function IssueChart({ issues }: IssueChartProps) {
   // Prepare data for bar chart (issues by type)
-  const typeData = issues.reduce((acc, issue) => {
+    const typeData = issues.reduce<IssueChartData[]>((acc, issue) => {
+
     const existing = acc.find((item) => item.type === issue.type)
     if (existing) {
       existing.count += 1
@@ -172,7 +181,7 @@ function IssueChart({ issues }: IssueChartProps) {
       })
     }
     return acc
-  }, [] as any[])
+  }, [])
 
   return (
     <Card className="shadow-medium border-0 bg-gradient-to-br from-card to-muted/30">
@@ -583,7 +592,7 @@ export default function Page() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
                 <div className="w-15 h-15  flex items-center justify-center ">
-                  <img src="/logo-new.png" />
+                  <Image src="/logo-new.png" alt="SnapFix logo" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
@@ -860,7 +869,7 @@ export default function Page() {
                   <Eye className="w-12 h-12 text-slate-400 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No issues found</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-500 text-center">
-                    Try adjusting your filters or search terms to find what you're looking for.
+                    Try adjusting your filters or search terms to find what you&apos;re looking for.
                   </p>
                 </CardContent>
               </Card>
